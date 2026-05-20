@@ -1,8 +1,8 @@
 from typing import Annotated, Sequence, TypedDict
 from dotenv import load_dotenv  
-# import os
+import os
 from langchain_core.messages import BaseMessage, ToolMessage, SystemMessage
-from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, END
@@ -30,7 +30,10 @@ def multiply(a: int, b: int) -> int:
 
 tools = [add, substract, multiply]
 
-model = ChatGroq(model="llama-3.1-8b-instant").bind_tools(tools)
+model = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0
+).bind_tools(tools)
 
 def model_call(state: AgentState) -> AgentState:
     system_prompt = SystemMessage(content="You are my AI assistant, please answer my query to the best of your ability.")
@@ -57,8 +60,8 @@ graph.add_conditional_edges(
     "our_agent",
     should_continue,
     {
-        "continue": "tools",
-        "end": END
+        "tools": "tools",
+        "continue": END
     }
 )
 
